@@ -882,20 +882,10 @@ function doCalculate() {
 
   let creepage = getCreepageDistance(ratVoltage, pd, mg, isPWB);
 
-  // Creepage must not be less than clearance for case A
-  let minClr = getClearanceTransient(impulseKV, 'A', pd);
-  minClr = Math.round(minClr * altFactor * 1000) / 1000;
-  if (creepage < minClr) {
-    notes_cr.push(`Creepage increased from ${creepage} mm to ${minClr} mm (cannot be &lt; clearance Case A per 5.3.2.1)`);
-    creepage = minClr;
-  }
-
-  if (insType === 'reinforced') {
-    notes_cr.push('Reinforced insulation: verify creepage &ge; clearance for reinforced insulation');
-    if (creepage < clrRequired) {
-      notes_cr.push(`Creepage increased from ${creepage} mm to ${clrRequired} mm to match reinforced clearance`);
-      creepage = clrRequired;
-    }
+  // Per clause 5.3.2.1: creepage shall not be less than the associated clearance
+  if (creepage < clrRequired) {
+    notes_cr.push(`Creepage increased from ${creepage} mm to ${clrRequired} mm (cannot be &lt; required clearance per 5.3.2.1)`);
+    creepage = clrRequired;
   }
 
   // --- DISPLAY ---
