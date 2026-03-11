@@ -1,0 +1,1018 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>IEC 60664-1 Clearance &amp; Creepage Calculator</title>
+<style>
+:root {
+  --primary: #1a5276;
+  --primary-light: #2980b9;
+  --accent: #e67e22;
+  --success: #27ae60;
+  --danger: #c0392b;
+  --bg: #f4f6f9;
+  --card-bg: #ffffff;
+  --text: #2c3e50;
+  --text-light: #7f8c8d;
+  --border: #dce1e8;
+  --shadow: 0 2px 12px rgba(0,0,0,0.08);
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+  font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  line-height: 1.6;
+}
+
+header {
+  background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%);
+  color: white;
+  padding: 1.5rem 2rem;
+  text-align: center;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+}
+
+header h1 { font-size: 1.6rem; font-weight: 700; margin-bottom: 0.25rem; }
+header p { font-size: 0.85rem; opacity: 0.85; }
+
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 1.5rem;
+}
+
+/* Tabs */
+.tabs {
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 1.5rem;
+  flex-wrap: wrap;
+}
+
+.tab-btn {
+  padding: 0.6rem 1.2rem;
+  border: 2px solid var(--border);
+  border-radius: 8px;
+  background: var(--card-bg);
+  cursor: pointer;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--text-light);
+  transition: all 0.2s;
+}
+
+.tab-btn:hover { border-color: var(--primary-light); color: var(--primary); }
+.tab-btn.active {
+  background: var(--primary);
+  color: white;
+  border-color: var(--primary);
+}
+
+.tab-content { display: none; }
+.tab-content.active { display: block; }
+
+/* Cards */
+.card {
+  background: var(--card-bg);
+  border-radius: 12px;
+  box-shadow: var(--shadow);
+  padding: 1.5rem;
+  margin-bottom: 1.5rem;
+  border: 1px solid var(--border);
+}
+
+.card h2 {
+  font-size: 1.1rem;
+  color: var(--primary);
+  margin-bottom: 1rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 2px solid var(--bg);
+}
+
+/* Form grid */
+.form-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 1rem;
+}
+
+.form-group { display: flex; flex-direction: column; gap: 0.3rem; }
+
+.form-group label {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--text-light);
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+}
+
+.form-group select,
+.form-group input {
+  padding: 0.55rem 0.75rem;
+  border: 1.5px solid var(--border);
+  border-radius: 6px;
+  font-size: 0.95rem;
+  background: white;
+  color: var(--text);
+  transition: border-color 0.2s;
+}
+
+.form-group select:focus,
+.form-group input:focus {
+  outline: none;
+  border-color: var(--primary-light);
+  box-shadow: 0 0 0 3px rgba(41,128,185,0.1);
+}
+
+.form-group .hint {
+  font-size: 0.75rem;
+  color: var(--text-light);
+  font-style: italic;
+}
+
+/* Buttons */
+.btn-row { margin-top: 1.2rem; display: flex; gap: 0.75rem; flex-wrap: wrap; }
+
+.btn {
+  padding: 0.65rem 1.5rem;
+  border: none;
+  border-radius: 8px;
+  font-size: 0.95rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.btn-primary {
+  background: var(--primary);
+  color: white;
+}
+.btn-primary:hover { background: var(--primary-light); transform: translateY(-1px); }
+
+.btn-secondary {
+  background: var(--bg);
+  color: var(--text);
+  border: 1.5px solid var(--border);
+}
+.btn-secondary:hover { background: var(--border); }
+
+/* Result box */
+.result-box {
+  background: linear-gradient(135deg, #eaf2f8 0%, #d5e8d4 100%);
+  border: 2px solid var(--success);
+  border-radius: 10px;
+  padding: 1.25rem;
+  margin-top: 1rem;
+  display: none;
+}
+
+.result-box.visible { display: block; }
+
+.result-box h3 {
+  font-size: 1rem;
+  color: var(--success);
+  margin-bottom: 0.75rem;
+}
+
+.result-row {
+  display: flex;
+  justify-content: space-between;
+  padding: 0.4rem 0;
+  border-bottom: 1px solid rgba(0,0,0,0.06);
+  font-size: 0.9rem;
+}
+
+.result-row:last-child { border-bottom: none; }
+.result-row .label { color: var(--text-light); }
+.result-row .value { font-weight: 700; color: var(--text); }
+
+.result-highlight {
+  background: var(--primary);
+  color: white;
+  padding: 0.75rem 1rem;
+  border-radius: 8px;
+  margin-top: 0.75rem;
+  text-align: center;
+  font-size: 1.15rem;
+  font-weight: 700;
+}
+
+.result-notes {
+  margin-top: 0.75rem;
+  padding: 0.6rem 0.8rem;
+  background: rgba(255,255,255,0.6);
+  border-radius: 6px;
+  font-size: 0.8rem;
+  color: var(--text-light);
+}
+
+.result-notes li { margin-left: 1rem; margin-bottom: 0.2rem; }
+
+/* Table lookup styles */
+.lookup-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.82rem;
+  margin-top: 0.75rem;
+}
+
+.lookup-table th {
+  background: var(--primary);
+  color: white;
+  padding: 0.5rem 0.6rem;
+  text-align: center;
+  font-weight: 600;
+  font-size: 0.75rem;
+  white-space: nowrap;
+}
+
+.lookup-table td {
+  padding: 0.35rem 0.6rem;
+  text-align: center;
+  border-bottom: 1px solid var(--border);
+}
+
+.lookup-table tr:hover { background: #eaf2f8; }
+.lookup-table tr.highlight { background: #d4efdf; font-weight: 700; }
+
+.table-scroll {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* Checkbox */
+.checkbox-group {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding-top: 1.2rem;
+}
+
+.checkbox-group input[type="checkbox"] {
+  width: 18px;
+  height: 18px;
+  cursor: pointer;
+}
+
+.checkbox-group label {
+  font-size: 0.9rem;
+  cursor: pointer;
+  text-transform: none;
+  color: var(--text);
+}
+
+/* Two-column result layout */
+.results-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+}
+
+@media (max-width: 768px) {
+  .results-grid { grid-template-columns: 1fr; }
+  .form-grid { grid-template-columns: 1fr; }
+}
+
+footer {
+  text-align: center;
+  padding: 1.5rem;
+  color: var(--text-light);
+  font-size: 0.8rem;
+}
+</style>
+</head>
+<body>
+
+<header>
+  <h1>IEC 60664-1:2020+A1:2025 Calculator</h1>
+  <p>Clearance &amp; Creepage Distance — Insulation Coordination for Low-Voltage Equipment</p>
+</header>
+
+<div class="container">
+
+<!-- Tabs -->
+<div class="tabs">
+  <button class="tab-btn active" onclick="switchTab('calc')">Calculator</button>
+  <button class="tab-btn" onclick="switchTab('tableF1')">Table F.1</button>
+  <button class="tab-btn" onclick="switchTab('tableF2')">Table F.2</button>
+  <button class="tab-btn" onclick="switchTab('tableF5')">Table F.5</button>
+  <button class="tab-btn" onclick="switchTab('tableF8')">Table F.8</button>
+  <button class="tab-btn" onclick="switchTab('tableF10')">Table F.10</button>
+</div>
+
+<!-- ============================================================ -->
+<!-- CALCULATOR TAB -->
+<!-- ============================================================ -->
+<div id="tab-calc" class="tab-content active">
+
+  <!-- INPUT CARD -->
+  <div class="card">
+    <h2>Input Parameters</h2>
+    <div class="form-grid">
+
+      <div class="form-group">
+        <label>Nominal Voltage (V)</label>
+        <input type="number" id="inp-voltage" value="230" min="1" max="50000" step="any">
+        <span class="hint">Line-to-neutral for mains, or DC voltage</span>
+      </div>
+
+      <div class="form-group">
+        <label>System Type</label>
+        <select id="inp-system">
+          <option value="single_phase">Single-phase / DC</option>
+          <option value="three_phase_4w">3-Phase 4-Wire (Neutral-earthed)</option>
+          <option value="three_phase_3w">3-Phase 3-Wire (Unearthed)</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label>Overvoltage Category</label>
+        <select id="inp-ovc">
+          <option value="1">OVC I — Special protection</option>
+          <option value="2" selected>OVC II — Appliances, portable</option>
+          <option value="3">OVC III — Fixed installation</option>
+          <option value="4">OVC IV — Origin of installation</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label>Pollution Degree</label>
+        <select id="inp-pd">
+          <option value="1">PD 1 — No pollution / dry</option>
+          <option value="2" selected>PD 2 — Non-conductive, temp. condensation</option>
+          <option value="3">PD 3 — Conductive pollution</option>
+          <option value="4">PD 4 — Persistent conductivity</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label>Field Condition</label>
+        <select id="inp-field">
+          <option value="A">Case A — Inhomogeneous (general)</option>
+          <option value="B">Case B — Homogeneous (smooth)</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label>Insulation Type</label>
+        <select id="inp-insulation">
+          <option value="basic" selected>Basic</option>
+          <option value="functional">Functional</option>
+          <option value="supplementary">Supplementary</option>
+          <option value="reinforced">Reinforced (160%)</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label>Material Group (CTI)</label>
+        <select id="inp-material">
+          <option value="1">Group I (CTI &ge; 600)</option>
+          <option value="2">Group II (400 &le; CTI &lt; 600)</option>
+          <option value="3" selected>Group IIIa (175 &le; CTI &lt; 400)</option>
+          <option value="4">Group IIIb (100 &le; CTI &lt; 175)</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label>Insulation Position</label>
+        <select id="inp-position">
+          <option value="line_to_line">Line-to-Line</option>
+          <option value="line_to_earth">Line-to-Earth</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label>Altitude (m)</label>
+        <input type="number" id="inp-altitude" value="2000" min="0" max="20000" step="100">
+        <span class="hint">Tables are based on 2000 m (default)</span>
+      </div>
+
+      <div class="form-group">
+        <label>Steady-State Peak Voltage (kV)</label>
+        <input type="number" id="inp-ss-peak" value="" min="0" step="any" placeholder="Optional">
+        <span class="hint">Leave empty if not applicable</span>
+      </div>
+
+      <div class="checkbox-group">
+        <input type="checkbox" id="inp-pwb">
+        <label for="inp-pwb">Printed Wiring Board (PWB)</label>
+      </div>
+
+    </div>
+
+    <div class="btn-row">
+      <button class="btn btn-primary" onclick="doCalculate()">Calculate</button>
+      <button class="btn btn-secondary" onclick="doReset()">Reset</button>
+    </div>
+  </div>
+
+  <!-- RESULTS -->
+  <div id="results-area" class="results-grid">
+    <div id="result-clearance" class="result-box">
+      <h3>Clearance (Table F.2 / F.8)</h3>
+      <div id="clearance-details"></div>
+      <div id="clearance-highlight" class="result-highlight"></div>
+      <div id="clearance-notes" class="result-notes"></div>
+    </div>
+    <div id="result-creepage" class="result-box">
+      <h3>Creepage Distance (Table F.5)</h3>
+      <div id="creepage-details"></div>
+      <div id="creepage-highlight" class="result-highlight"></div>
+      <div id="creepage-notes" class="result-notes"></div>
+    </div>
+  </div>
+
+</div>
+
+<!-- ============================================================ -->
+<!-- TABLE F.1 TAB -->
+<!-- ============================================================ -->
+<div id="tab-tableF1" class="tab-content">
+  <div class="card">
+    <h2>Table F.1 — Rated Impulse Withstand Voltage for Equipment Energized from Mains</h2>
+    <div class="table-scroll">
+      <table class="lookup-table" id="tbl-f1">
+        <thead>
+          <tr>
+            <th>3-Phase (V)</th>
+            <th>1-Phase (V)</th>
+            <th>V<sub>L-N</sub> up to (V)</th>
+            <th>OVC I (V)</th>
+            <th>OVC II (V)</th>
+            <th>OVC III (V)</th>
+            <th>OVC IV (V)</th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- ============================================================ -->
+<!-- TABLE F.2 TAB -->
+<!-- ============================================================ -->
+<div id="tab-tableF2" class="tab-content">
+  <div class="card">
+    <h2>Table F.2 — Clearances to Withstand Transient Overvoltages (mm)</h2>
+    <p style="font-size:0.8rem;color:var(--text-light);margin-bottom:0.5rem;">
+      Minimum clearances in air up to 2 000 m above sea level
+    </p>
+    <div class="table-scroll">
+      <table class="lookup-table" id="tbl-f2">
+        <thead>
+          <tr>
+            <th rowspan="2">Impulse (kV)</th>
+            <th colspan="3">Case A — Inhomogeneous</th>
+            <th colspan="3">Case B — Homogeneous</th>
+          </tr>
+          <tr>
+            <th>PD 1</th><th>PD 2</th><th>PD 3</th>
+            <th>PD 1</th><th>PD 2</th><th>PD 3</th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- ============================================================ -->
+<!-- TABLE F.5 TAB -->
+<!-- ============================================================ -->
+<div id="tab-tableF5" class="tab-content">
+  <div class="card">
+    <h2>Table F.5 — Creepage Distances to Avoid Failure Due to Tracking (mm)</h2>
+    <div class="table-scroll">
+      <table class="lookup-table" id="tbl-f5">
+        <thead>
+          <tr>
+            <th rowspan="2">V<sub>RMS</sub> (V)</th>
+            <th colspan="2">PWB</th>
+            <th>PD 1</th>
+            <th colspan="3">PD 2</th>
+            <th colspan="3">PD 3</th>
+          </tr>
+          <tr>
+            <th>PD1</th><th>PD2</th>
+            <th>All</th>
+            <th>Grp I</th><th>Grp II</th><th>Grp III</th>
+            <th>Grp I</th><th>Grp II</th><th>Grp III</th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- ============================================================ -->
+<!-- TABLE F.8 TAB -->
+<!-- ============================================================ -->
+<div id="tab-tableF8" class="tab-content">
+  <div class="card">
+    <h2>Table F.8 — Clearances for Steady-State / Temporary / Recurring Peak Voltages (mm)</h2>
+    <div class="table-scroll">
+      <table class="lookup-table" id="tbl-f8">
+        <thead>
+          <tr>
+            <th>V<sub>peak</sub> (kV)</th>
+            <th>Case A — Inhomogeneous (mm)</th>
+            <th>Case B — Homogeneous (mm)</th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- ============================================================ -->
+<!-- TABLE F.10 TAB -->
+<!-- ============================================================ -->
+<div id="tab-tableF10" class="tab-content">
+  <div class="card">
+    <h2>Table F.10 — Altitude Correction Factors for Clearance</h2>
+    <p style="font-size:0.8rem;color:var(--text-light);margin-bottom:0.5rem;">
+      Clearance values in F.2/F.8 are specified at 2 000 m. Multiply by k<sub>d</sub> for other altitudes.
+    </p>
+    <div class="table-scroll">
+      <table class="lookup-table" id="tbl-f10">
+        <thead>
+          <tr>
+            <th>Altitude (m)</th>
+            <th>Factor k<sub>d</sub></th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+</div><!-- container -->
+
+<footer>
+  BS EN IEC 60664-1:2020+A1:2025 &mdash; Insulation Coordination for Equipment within Low-Voltage Supply Systems
+</footer>
+
+<script>
+// =================================================================
+// DATA TABLES
+// =================================================================
+
+const TABLE_F1 = [
+  { vln: 50,   three: "",              single: "",              ovc: [330, 500, 800, 1500] },
+  { vln: 100,  three: "",              single: "",              ovc: [500, 800, 1500, 2500] },
+  { vln: 150,  three: "",              single: "120–240",       ovc: [800, 1500, 2500, 4000] },
+  { vln: 300,  three: "230/400, 277/480", single: "",           ovc: [1500, 2500, 4000, 6000] },
+  { vln: 600,  three: "400/690",       single: "",              ovc: [2500, 4000, 6000, 8000] },
+  { vln: 1000, three: "1 000",         single: "",              ovc: [4000, 6000, 8000, 12000] },
+  { vln: 1250, three: "",              single: ">1000–1250 DC", ovc: [4000, 6000, 8000, 12000] },
+  { vln: 1500, three: "",              single: ">1250–1500 DC", ovc: [6000, 8000, 10000, 15000] },
+];
+
+const TABLE_F2 = [
+  [0.33,  0.01, null, null, 0.01, null, null],
+  [0.40,  0.02, null, null, 0.02, null, null],
+  [0.50,  0.04, 0.2,  null, 0.04, 0.2,  null],
+  [0.60,  0.06, null, 0.8,  0.06, null, null],
+  [0.80,  0.10, null, null, 0.10, null, 0.8],
+  [1.0,   0.15, null, null, 0.15, null, null],
+  [1.2,   0.25, 0.25, null, 0.2,  null, null],
+  [1.5,   0.5,  0.5,  null, 0.3,  0.3,  null],
+  [2.0,   1.0,  1.0,  1.0,  0.45, 0.45, null],
+  [2.5,   1.5,  1.5,  1.5,  0.60, 0.60, null],
+  [3.0,   2.0,  2.0,  2.0,  0.80, 0.80, null],
+  [4.0,   3.0,  3.0,  3.0,  1.2,  1.2,  1.2],
+  [5.0,   4.0,  4.0,  4.0,  1.5,  1.5,  1.5],
+  [6.0,   5.5,  5.5,  5.5,  2.0,  2.0,  2.0],
+  [8.0,   8.0,  8.0,  8.0,  3.0,  3.0,  3.0],
+  [10.0,  11,   11,   11,   3.5,  3.5,  3.5],
+  [12.0,  14,   14,   14,   4.5,  4.5,  4.5],
+  [15.0,  18,   18,   18,   5.5,  5.5,  5.5],
+  [20.0,  25,   25,   25,   8.0,  8.0,  8.0],
+  [25.0,  33,   33,   33,   10,   10,   10],
+  [30.0,  40,   40,   40,   12.5, 12.5, 12.5],
+  [40.0,  60,   60,   60,   17,   17,   17],
+  [50.0,  75,   75,   75,   22,   22,   22],
+  [60.0,  90,   90,   90,   27,   27,   27],
+  [80.0,  130,  130,  130,  35,   35,   35],
+  [100.0, 170,  170,  170,  45,   45,   45],
+];
+
+// voltage, PWB_PD1, PWB_PD2, PD1, PD2_I, PD2_II, PD2_III, PD3_I, PD3_II, PD3_III
+const TABLE_F5 = [
+  [10,    0.025, 0.040, 0.080, 0.400, 0.400, 0.400, 1.000, 1.000, 1.000],
+  [12.5,  0.025, 0.040, 0.090, 0.420, 0.420, 0.420, 1.050, 1.050, 1.050],
+  [16,    0.025, 0.040, 0.100, 0.450, 0.450, 0.450, 1.100, 1.100, 1.100],
+  [20,    0.025, 0.040, 0.110, 0.480, 0.480, 0.480, 1.200, 1.200, 1.200],
+  [25,    0.025, 0.040, 0.125, 0.500, 0.500, 0.500, 1.250, 1.250, 1.250],
+  [32,    0.025, 0.040, 0.14,  0.53,  0.53,  0.53,  1.30,  1.30,  1.30],
+  [40,    0.025, 0.040, 0.16,  0.56,  0.80,  1.10,  1.40,  1.60,  1.80],
+  [50,    0.025, 0.040, 0.18,  0.60,  0.85,  1.20,  1.50,  1.70,  1.90],
+  [63,    0.040, 0.063, 0.20,  0.63,  0.90,  1.25,  1.60,  1.80,  2.00],
+  [80,    0.063, 0.100, 0.22,  0.67,  0.95,  1.30,  1.70,  1.90,  2.10],
+  [100,   0.100, 0.160, 0.25,  0.71,  1.00,  1.40,  1.80,  2.00,  2.20],
+  [125,   0.160, 0.250, 0.28,  0.75,  1.05,  1.50,  1.90,  2.10,  2.40],
+  [160,   0.250, 0.400, 0.32,  0.80,  1.10,  1.60,  2.00,  2.20,  2.50],
+  [200,   0.400, 0.630, 0.42,  1.00,  1.40,  2.00,  2.50,  2.80,  3.20],
+  [250,   0.560, 1.000, 0.56,  1.25,  1.80,  2.50,  3.20,  3.60,  4.00],
+  [320,   0.75,  1.60,  0.75,  1.60,  2.20,  3.20,  4.00,  4.50,  5.00],
+  [400,   1.0,   2.0,   1.0,   2.0,   2.8,   4.0,   5.0,   5.6,   6.3],
+  [500,   1.3,   2.5,   1.3,   2.5,   3.6,   5.0,   6.3,   7.1,   8.0],
+  [630,   1.8,   3.2,   1.8,   3.2,   4.5,   6.3,   8.0,   9.0,   10.0],
+  [800,   2.4,   4.0,   2.4,   4.0,   5.6,   8.0,   10.0,  11.0,  12.5],
+  [1000,  3.2,   5.0,   3.2,   5.0,   7.1,   10.0,  12.5,  14.0,  16.0],
+  [1250,  null,  null,  4.2,   6.3,   9.0,   12.5,  16.0,  18.0,  20.0],
+  [1600,  null,  null,  5.6,   8.0,   11.0,  16.0,  20.0,  22.0,  25.0],
+  [2000,  null,  null,  7.5,   10.0,  14.0,  20.0,  25.0,  28.0,  32.0],
+  [2500,  null,  null,  10.0,  12.5,  18.0,  25.0,  32.0,  36.0,  40.0],
+  [3200,  null,  null,  12.5,  16.0,  22.0,  32.0,  40.0,  45.0,  50.0],
+];
+
+// voltage_peak_kV, case_A_mm, case_B_mm
+const TABLE_F8 = [
+  [0.04,  0.001,  0.001],
+  [0.06,  0.002,  0.002],
+  [0.1,   0.003,  0.003],
+  [0.12,  0.004,  0.004],
+  [0.15,  0.005,  0.005],
+  [0.20,  0.006,  0.006],
+  [0.25,  0.008,  0.008],
+  [0.33,  0.01,   0.01],
+  [0.4,   0.02,   0.02],
+  [0.5,   0.04,   0.04],
+  [0.6,   0.06,   0.06],
+  [0.8,   0.13,   0.1],
+  [1.0,   0.26,   0.15],
+  [1.2,   0.42,   0.2],
+  [1.5,   0.76,   0.3],
+  [2.0,   1.27,   0.45],
+  [2.5,   1.8,    0.6],
+  [3.0,   2.4,    0.8],
+  [4.0,   3.8,    1.2],
+  [5.0,   5.7,    1.5],
+  [6.0,   7.9,    2.0],
+  [8.0,   11.0,   3.0],
+  [10.0,  15.2,   3.5],
+  [12.0,  19.0,   4.5],
+  [15.0,  25.0,   5.5],
+  [20.0,  34.0,   8.0],
+  [25.0,  44.0,   10.0],
+  [30.0,  55.0,   12.5],
+  [40.0,  77.0,   17.0],
+  [50.0,  100.0,  22.0],
+  [60.0,  null,   27.0],
+  [80.0,  null,   35.0],
+  [100.0, null,   45.0],
+];
+
+const TABLE_F10 = [
+  [0,    0.784],
+  [200,  0.803],
+  [500,  0.833],
+  [1000, 0.884],
+  [2000, 1.000],
+];
+
+// Table F.3 - single phase rationalization
+const TABLE_F3 = [
+  [12.5,12.5,null],[24,25,null],[25,25,null],[30,32,null],[42,50,null],
+  [48,50,null],[50,50,null],[60,63,32],[100,100,null],[110,125,null],
+  [120,125,null],[150,160,null],[200,200,100],[220,250,null],[240,250,125],
+  [300,320,null],[440,500,250],[600,630,null],[960,1000,500],[1000,1000,null],
+  [1500,1500,null],
+];
+
+// Table F.4 - three phase rationalization
+const TABLE_F4 = [
+  [60,63,32,63],[110,125,80,125],[120,125,80,125],[127,125,80,125],
+  [150,160,null,160],[200,200,null,200],[208,200,125,200],
+  [220,250,160,250],[230,250,160,250],[240,250,160,250],
+  [300,320,null,320],[380,400,250,400],[400,400,250,400],
+  [415,400,250,400],[440,500,250,500],[480,500,320,500],
+  [500,500,320,500],[575,630,400,630],[600,630,null,630],
+  [660,630,400,630],[690,630,400,630],[720,800,500,800],
+  [830,800,500,800],[960,1000,630,1000],[1000,1000,null,1000],
+];
+
+// =================================================================
+// CALCULATION FUNCTIONS
+// =================================================================
+
+function lerp(x, x0, y0, x1, y1) {
+  if (x1 === x0) return y0;
+  return y0 + (y1 - y0) * (x - x0) / (x1 - x0);
+}
+
+function interpolateTable(voltages, values, target) {
+  if (target <= voltages[0]) return values[0];
+  if (target >= voltages[voltages.length - 1]) return values[values.length - 1];
+  let lo = 0;
+  for (let i = 0; i < voltages.length; i++) {
+    if (voltages[i] <= target && values[i] !== null) lo = i;
+  }
+  let hi = lo + 1;
+  while (hi < voltages.length && values[hi] === null) hi++;
+  if (hi >= voltages.length) return values[lo];
+  return lerp(target, voltages[lo], values[lo], voltages[hi], values[hi]);
+}
+
+function getRatedImpulse(vln, ovc) {
+  for (const row of TABLE_F1) {
+    if (vln <= row.vln) return row.ovc[ovc - 1];
+  }
+  return TABLE_F1[TABLE_F1.length - 1].ovc[ovc - 1];
+}
+
+function getClearanceTransient(impulseKV, field, pd) {
+  let pdEff = pd >= 4 ? 3 : pd;
+  // Column indices in TABLE_F2: [kV, A1, A2, A3, B1, B2, B3]
+  let colBase = field === 'A' ? 1 : 4;
+  let col = colBase + (pdEff - 1);
+
+  const voltages = TABLE_F2.map(r => r[0]);
+  const values = TABLE_F2.map(r => {
+    let v = r[col];
+    // fallback to lower PD if null
+    if (v === null) {
+      for (let p = pdEff - 1; p >= 1; p--) {
+        v = r[colBase + (p - 1)];
+        if (v !== null) break;
+      }
+    }
+    return v;
+  });
+
+  let result = interpolateTable(voltages, values, impulseKV);
+  if (pd >= 4) result = Math.max(result, 1.6);
+  return Math.round(result * 1000) / 1000;
+}
+
+function getCreepageF5ColIndex(pd, mg, isPWB) {
+  if (isPWB) return pd <= 1 ? 1 : 2;
+  if (pd === 1) return 3;
+  if (pd === 2) {
+    if (mg === 1) return 4;
+    if (mg === 2) return 5;
+    return 6;
+  }
+  // pd 3 or 4
+  if (mg === 1) return 7;
+  if (mg === 2) return 8;
+  return 9;
+}
+
+function getCreepageDistance(vrms, pd, mg, isPWB) {
+  const col = getCreepageF5ColIndex(pd >= 4 ? 3 : pd, mg, isPWB);
+  const voltages = TABLE_F5.map(r => r[0]);
+  const values = TABLE_F5.map(r => r[col]);
+  let result = interpolateTable(voltages, values, vrms);
+  return Math.round(result * 1000) / 1000;
+}
+
+function getClearanceSteadyState(vpeak, field) {
+  const col = field === 'A' ? 1 : 2;
+  const voltages = TABLE_F8.map(r => r[0]);
+  const values = TABLE_F8.map(r => r[col]);
+  let result = interpolateTable(voltages, values, vpeak);
+  return Math.round(result * 1000) / 1000;
+}
+
+function getAltitudeFactor(alt) {
+  const alts = TABLE_F10.map(r => r[0]);
+  const factors = TABLE_F10.map(r => r[1]);
+  if (alt <= alts[0]) return factors[0];
+  if (alt > 2000) return 1.0 / Math.exp(-(alt - 2000) / 8500);
+  return Math.round(interpolateTable(alts, factors, alt) * 10000) / 10000;
+}
+
+function rationalizeVoltageSinglePhase(vnom, position) {
+  for (const [nom, vll, vle] of TABLE_F3) {
+    if (vnom <= nom) {
+      if (position === 'line_to_earth' && vle !== null) return vle;
+      return vll;
+    }
+  }
+  return TABLE_F3[TABLE_F3.length - 1][1];
+}
+
+function rationalizeVoltageThreePhase(vnom, sysType, position) {
+  for (const [nom, vll, vle4w, vle3w] of TABLE_F4) {
+    if (vnom <= nom) {
+      if (position === 'line_to_line') return vll;
+      if (sysType === 'three_phase_4w') return vle4w !== null ? vle4w : vll;
+      return vle3w;
+    }
+  }
+  return TABLE_F4[TABLE_F4.length - 1][1];
+}
+
+// =================================================================
+// MAIN CALCULATE
+// =================================================================
+
+function doCalculate() {
+  const voltage = parseFloat(document.getElementById('inp-voltage').value);
+  const system = document.getElementById('inp-system').value;
+  const ovc = parseInt(document.getElementById('inp-ovc').value);
+  const pd = parseInt(document.getElementById('inp-pd').value);
+  const field = document.getElementById('inp-field').value;
+  const insType = document.getElementById('inp-insulation').value;
+  const mg = parseInt(document.getElementById('inp-material').value);
+  const position = document.getElementById('inp-position').value;
+  const altitude = parseFloat(document.getElementById('inp-altitude').value) || 2000;
+  const ssPeakStr = document.getElementById('inp-ss-peak').value.trim();
+  const ssPeak = ssPeakStr ? parseFloat(ssPeakStr) : null;
+  const isPWB = document.getElementById('inp-pwb').checked;
+
+  const notes_c = [];
+  const notes_cr = [];
+
+  // --- CLEARANCE ---
+  let impulseV = getRatedImpulse(voltage, ovc);
+  let impulseKV = impulseV / 1000;
+
+  if (insType === 'reinforced') {
+    impulseKV *= 1.6;
+    notes_c.push(`Reinforced insulation: impulse voltage &times; 1.6 = ${impulseKV.toFixed(1)} kV`);
+  }
+
+  let clrTransient = getClearanceTransient(impulseKV, field, pd);
+  let clrSS = null;
+
+  if (ssPeak !== null) {
+    let ssKV = insType === 'reinforced' ? ssPeak * 1.6 : ssPeak;
+    if (insType === 'reinforced') {
+      notes_c.push(`Reinforced: steady-state &times; 1.6 = ${ssKV.toFixed(1)} kV`);
+    }
+    clrSS = getClearanceSteadyState(ssKV, field);
+  }
+
+  const altFactor = getAltitudeFactor(altitude);
+  const clrTransCorr = Math.round(clrTransient * altFactor * 1000) / 1000;
+  let clrSSCorr = clrSS !== null ? Math.round(clrSS * altFactor * 1000) / 1000 : null;
+
+  if (altFactor !== 1.0) {
+    notes_c.push(`Altitude correction (Table F.10): k<sub>d</sub> = ${altFactor} at ${altitude} m`);
+  }
+
+  let clrRequired = clrTransCorr;
+  if (clrSSCorr !== null) {
+    clrRequired = Math.max(clrTransCorr, clrSSCorr);
+    notes_c.push(`Required = max(transient ${clrTransCorr} mm, steady-state ${clrSSCorr} mm)`);
+  }
+
+  // --- CREEPAGE ---
+  let ratVoltage;
+  if (insType === 'functional') {
+    ratVoltage = voltage;
+    notes_cr.push('Functional insulation: using actual working voltage');
+  } else if (system === 'single_phase') {
+    ratVoltage = rationalizeVoltageSinglePhase(voltage, position);
+  } else {
+    ratVoltage = rationalizeVoltageThreePhase(voltage, system, position);
+  }
+  notes_cr.push(`Rationalized voltage: ${ratVoltage} V`);
+
+  let creepage = getCreepageDistance(ratVoltage, pd, mg, isPWB);
+
+  // Creepage must not be less than clearance for case A
+  let minClr = getClearanceTransient(impulseKV, 'A', pd);
+  minClr = Math.round(minClr * altFactor * 1000) / 1000;
+  if (creepage < minClr) {
+    notes_cr.push(`Creepage increased from ${creepage} mm to ${minClr} mm (cannot be &lt; clearance Case A per 5.3.2.1)`);
+    creepage = minClr;
+  }
+
+  if (insType === 'reinforced') {
+    notes_cr.push('Reinforced insulation: verify creepage &ge; clearance for reinforced insulation');
+    if (creepage < clrRequired) {
+      notes_cr.push(`Creepage increased from ${creepage} mm to ${clrRequired} mm to match reinforced clearance`);
+      creepage = clrRequired;
+    }
+  }
+
+  // --- DISPLAY ---
+  const rClr = document.getElementById('result-clearance');
+  const rCrp = document.getElementById('result-creepage');
+  rClr.classList.add('visible');
+  rCrp.classList.add('visible');
+
+  const fieldLabel = field === 'A' ? 'A (Inhomogeneous)' : 'B (Homogeneous)';
+
+  document.getElementById('clearance-details').innerHTML = `
+    <div class="result-row"><span class="label">Rated impulse voltage</span><span class="value">${impulseV} V (${(impulseV/1000).toFixed(1)} kV)</span></div>
+    <div class="result-row"><span class="label">Field condition</span><span class="value">Case ${fieldLabel}</span></div>
+    <div class="result-row"><span class="label">Pollution degree</span><span class="value">${pd}</span></div>
+    <div class="result-row"><span class="label">Altitude correction k<sub>d</sub></span><span class="value">${altFactor}</span></div>
+    <div class="result-row"><span class="label">Clearance (transient)</span><span class="value">${clrTransCorr} mm</span></div>
+    ${clrSSCorr !== null ? `<div class="result-row"><span class="label">Clearance (steady-state)</span><span class="value">${clrSSCorr} mm</span></div>` : ''}
+  `;
+  document.getElementById('clearance-highlight').innerHTML = `REQUIRED CLEARANCE: ${clrRequired} mm`;
+  document.getElementById('clearance-notes').innerHTML = notes_c.length ?
+    '<ul>' + notes_c.map(n => `<li>${n}</li>`).join('') + '</ul>' : '';
+
+  const mgLabels = { 1: 'I (CTI&ge;600)', 2: 'II (400&le;CTI&lt;600)', 3: 'IIIa (175&le;CTI&lt;400)', 4: 'IIIb (100&le;CTI&lt;175)' };
+
+  document.getElementById('creepage-details').innerHTML = `
+    <div class="result-row"><span class="label">Rationalized voltage</span><span class="value">${ratVoltage} V</span></div>
+    <div class="result-row"><span class="label">Pollution degree</span><span class="value">${pd}</span></div>
+    <div class="result-row"><span class="label">Material group</span><span class="value">${mgLabels[mg]}</span></div>
+    <div class="result-row"><span class="label">PWB</span><span class="value">${isPWB ? 'Yes' : 'No'}</span></div>
+  `;
+  document.getElementById('creepage-highlight').innerHTML = `REQUIRED CREEPAGE: ${creepage} mm`;
+  document.getElementById('creepage-notes').innerHTML = notes_cr.length ?
+    '<ul>' + notes_cr.map(n => `<li>${n}</li>`).join('') + '</ul>' : '';
+}
+
+function doReset() {
+  document.getElementById('inp-voltage').value = 230;
+  document.getElementById('inp-system').value = 'single_phase';
+  document.getElementById('inp-ovc').value = '2';
+  document.getElementById('inp-pd').value = '2';
+  document.getElementById('inp-field').value = 'A';
+  document.getElementById('inp-insulation').value = 'basic';
+  document.getElementById('inp-material').value = '3';
+  document.getElementById('inp-position').value = 'line_to_line';
+  document.getElementById('inp-altitude').value = 2000;
+  document.getElementById('inp-ss-peak').value = '';
+  document.getElementById('inp-pwb').checked = false;
+  document.getElementById('result-clearance').classList.remove('visible');
+  document.getElementById('result-creepage').classList.remove('visible');
+}
+
+// =================================================================
+// TAB SWITCHING
+// =================================================================
+
+function switchTab(id) {
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+  document.getElementById('tab-' + id).classList.add('active');
+  event.target.classList.add('active');
+}
+
+// =================================================================
+// POPULATE REFERENCE TABLES
+// =================================================================
+
+function populateTables() {
+  // F.1
+  let tbody = document.querySelector('#tbl-f1 tbody');
+  TABLE_F1.forEach(r => {
+    const tr = document.createElement('tr');
+    tr.innerHTML = `<td>${r.three || '—'}</td><td>${r.single || '—'}</td><td>${r.vln}</td>
+      <td>${r.ovc[0]}</td><td>${r.ovc[1]}</td><td>${r.ovc[2]}</td><td>${r.ovc[3]}</td>`;
+    tbody.appendChild(tr);
+  });
+
+  // F.2
+  tbody = document.querySelector('#tbl-f2 tbody');
+  TABLE_F2.forEach(r => {
+    const tr = document.createElement('tr');
+    const cells = [r[0]].concat(r.slice(1).map(v => v !== null ? v : '—'));
+    tr.innerHTML = cells.map((c, i) => `<td>${i === 0 ? c : c}</td>`).join('');
+    tbody.appendChild(tr);
+  });
+
+  // F.5
+  tbody = document.querySelector('#tbl-f5 tbody');
+  TABLE_F5.forEach(r => {
+    const tr = document.createElement('tr');
+    tr.innerHTML = r.map((c, i) => {
+      if (c === null) return '<td>—</td>';
+      if (i === 0) return `<td>${c}</td>`;
+      return `<td>${c}</td>`;
+    }).join('');
+    tbody.appendChild(tr);
+  });
+
+  // F.8
+  tbody = document.querySelector('#tbl-f8 tbody');
+  TABLE_F8.forEach(r => {
+    const tr = document.createElement('tr');
+    tr.innerHTML = `<td>${r[0]}</td><td>${r[1] !== null ? r[1] : '—'}</td><td>${r[2] !== null ? r[2] : '—'}</td>`;
+    tbody.appendChild(tr);
+  });
+
+  // F.10
+  tbody = document.querySelector('#tbl-f10 tbody');
+  TABLE_F10.forEach(r => {
+    const tr = document.createElement('tr');
+    tr.innerHTML = `<td>${r[0]}</td><td>${r[1]}</td>`;
+    tbody.appendChild(tr);
+  });
+}
+
+// Initialize
+populateTables();
+</script>
+
+</body>
+</html>
